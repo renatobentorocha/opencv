@@ -6,7 +6,7 @@
           "name": "(lldb) Debugger",
           "type": "cppdbg",
           "request": "launch",
-          "program": "/Users/renatorocha/Projects/opencv/studies/flood_fill/build/flood-fill",
+          "program": "/Users/renatorocha/Projects/opencv/studies/Watershed/build/watershed",
           "args": ["/Users/renatorocha/Projects/opencv/lenna.png"],
           "stopAtEntry": true,
           "cwd": "${workspaceFolder}",
