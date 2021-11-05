@@ -110,6 +110,9 @@ int main(int argc, char **argv)
         return -1;
     }
 
+    cv::Mat result;
+    img.copyTo(result);
+
     cv::imshow("Original", img);
     cv::waitKey(0);
 
@@ -117,7 +120,7 @@ int main(int argc, char **argv)
     cv::Mat bw;
     cv::cvtColor(img, bw, cv::COLOR_BGR2GRAY);
     cv::threshold(bw, bw, 0, 255, cv::THRESH_BINARY_INV + cv::THRESH_OTSU);
-    cv::imshow("bw", bw);
+    cv::imshow("Binary image", bw);
     cv::waitKey(0);
 
     // Perform the distance transform algorithm
@@ -127,18 +130,24 @@ int main(int argc, char **argv)
     // Normalize the distance image for range = {0.0, 1.0}
     // so we can visualize and threshold it
     cv::normalize(dist, dist, 0, 1., cv::NORM_MINMAX);
-    cv::imshow("dist", dist);
+    cv::imshow("Distance transforme", dist);
     cv::waitKey(0);
 
     // Threshold to obtain the peaks
     // This will be the markers for the foreground objects
     cv::threshold(dist, dist, 0, 255, cv::THRESH_BINARY);
-    cv::imshow("dist2", dist);
+    cv::imshow("Distance transforme", dist);
     cv::waitKey(0);
 
     cv::Mat markers(img.size(), CV_32S);
     dist.convertTo(dist, CV_8UC1);
     int nLabels = cv::connectedComponents(dist, markers, 8);
+
+    cv::Mat markers_cp = markers.clone();
+    markers_cp.convertTo(markers_cp, CV_8UC1);
+    imshow("Connected Components", markers_cp);
+    cv::waitKey(0);
+
     std::vector<cv::Vec3b> colors(nLabels);
     colors[0] = cv::Vec3b(0, 0, 0); //background
 
@@ -159,7 +168,23 @@ int main(int argc, char **argv)
         }
     }
 
-    imshow("Connected Components", dst);
+    imshow("Connected Components Color", dst);
+    cv::waitKey(0);
+
+    cv::watershed(img, markers);
+    markers.convertTo(markers, CV_8UC1);
+
+    imshow("Watershed", markers);
+    cv::waitKey(0);
+
+    cv::Mat mask(markers.size(), CV_8UC3, cv::Scalar::all(255));
+    mask.setTo(cv::Scalar(0), markers);
+
+    imshow("Mask from watershed", mask);
+    cv::waitKey(0);
+
+    result.setTo(cv::Scalar(0, 0, 255), mask);
+    imshow("Result with Mask", result);
     cv::waitKey(0);
 
     cv::destroyAllWindows();
