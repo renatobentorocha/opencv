@@ -113,61 +113,53 @@ int main(int argc, char **argv)
     cv::imshow("Original", img);
     cv::waitKey(0);
 
-    cv::Mat gray;
-    cv::cvtColor(img, gray, cv::COLOR_BGR2GRAY);
-
-    cv::imshow("Gray", gray);
+    // Create binary image from source image
+    cv::Mat bw;
+    cv::cvtColor(img, bw, cv::COLOR_BGR2GRAY);
+    cv::threshold(bw, bw, 0, 255, cv::THRESH_BINARY_INV + cv::THRESH_OTSU);
+    cv::imshow("bw", bw);
     cv::waitKey(0);
 
-    cv::Mat threshold;
-    cv::threshold(gray, threshold, 0, 255, cv::THRESH_BINARY_INV + cv::THRESH_OTSU);
+    // Perform the distance transform algorithm
+    cv::Mat dist;
+    cv::distanceTransform(bw, dist, cv::DIST_L2, 5);
 
-    cv::namedWindow("Threshold", cv::WINDOW_AUTOSIZE);
-    // cv::setMouseCallback("Original", onClick, NULL);
-    cv::imshow("Threshold", threshold);
+    // Normalize the distance image for range = {0.0, 1.0}
+    // so we can visualize and threshold it
+    cv::normalize(dist, dist, 0, 1., cv::NORM_MINMAX);
+    cv::imshow("dist", dist);
     cv::waitKey(0);
 
-    // noise removal
-    cv::Mat kernel(3, 3, CV_8UC1, cv::Scalar::all(1));
-    cv::Mat opening;
-    cv::morphologyEx(threshold, opening, cv::MORPH_OPEN, kernel, cv::Point(-1, -1), 2);
-
-    cv::imshow("Opening", opening);
+    // Threshold to obtain the peaks
+    // This will be the markers for the foreground objects
+    cv::threshold(dist, dist, 0, 255, cv::THRESH_BINARY);
+    cv::imshow("dist2", dist);
     cv::waitKey(0);
 
-    // sure background area
-    cv::Mat sure_bg;
-    cv::dilate(opening, sure_bg, kernel, cv::Point(-1, -1), 3);
+    cv::Mat markers(img.size(), CV_32S);
+    dist.convertTo(dist, CV_8UC1);
+    int nLabels = cv::connectedComponents(dist, markers, 8);
+    std::vector<cv::Vec3b> colors(nLabels);
+    colors[0] = cv::Vec3b(0, 0, 0); //background
 
-    cv::imshow("Sure bg", sure_bg);
-    cv::waitKey(0);
+    for (int label = 1; label < nLabels; ++label)
+    {
+        colors[label] = cv::Vec3b((rand() & 255), (rand() & 255), (rand() & 255));
+    }
 
-    //Finding sure foreground area
-    cv::Mat dist_transform;
-    cv::distanceTransform(opening, dist_transform, cv::DIST_L2, 5);
-    // Seems be the same that Opening
-    cv::imshow("dist_transform", dist_transform);
-    cv::waitKey(0);
+    cv::Mat dst(img.size(), CV_8UC3);
 
-    double minVal;
-    double maxVal;
-    cv::Point minLoc;
-    cv::Point maxLoc;
-    cv::Mat sure_fg;
+    for (int r = 0; r < dst.rows; ++r)
+    {
+        for (int c = 0; c < dst.cols; ++c)
+        {
+            int label = markers.at<int>(r, c);
+            cv::Vec3b &pixel = dst.at<cv::Vec3b>(r, c);
+            pixel = colors[label];
+        }
+    }
 
-    cv::minMaxLoc(dist_transform, &minVal, &maxVal, &minLoc, &maxLoc);
-    cv::threshold(dist_transform, sure_fg, 0.7 * maxVal, 255, 0);
-
-    cv::imshow("sure_fg", sure_fg);
-    cv::waitKey(0);
-    // sure_fg = cv2.threshold(dist_transform, 0.7 * dist_transform.max(), 255, 0)
-
-    // Finding unknown region
-    // Error here
-    cv::Mat unknown(sure_bg.rows, sure_bg.cols, sure_bg.type());
-    cv::subtract(sure_bg, sure_fg, unknown);
-
-    cv::imshow("unknown", unknown);
+    imshow("Connected Components", dst);
     cv::waitKey(0);
 
     cv::destroyAllWindows();
