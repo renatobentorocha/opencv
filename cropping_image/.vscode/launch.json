@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    
+      {
+          "name": "(lldb) Debugger",
+          "type": "cppdbg",
+          "request": "launch",
+          "program": "/Users/renato/projects/opencv/studies/cropping_image/build/cropping_image",
+          "args": ["/Users/renato/projects/opencv/lenna.png"],
+          "stopAtEntry": true,
+          "cwd": "${workspaceFolder}",
+          "environment": [],
+          "externalConsole": false,
+          "MIMode": "lldb"
+      }
+  ]
+}
