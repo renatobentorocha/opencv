@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    
+      {
+          "name": "(lldb) Debugger",
+          "type": "cppdbg",
+          "request": "launch",
+          "program": "/Users/renato/projects/opencv/studies/find_color/build/find_color",
+          "args": ["/Users/renato/projects/opencv/shapes.png"],
+          "stopAtEntry": true,
+          "cwd": "${workspaceFolder}",
+          "environment": [],
+          "externalConsole": false,
+          "MIMode": "lldb"
+      }
+  ]
+}
