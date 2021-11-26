@@ -1,0 +1,18 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    
+      {
+          "name": "(lldb) Debugger",
+          "type": "cppdbg",
+          "request": "launch",
+          "program": "/Users/renatorocha/Projects/opencv/studies/face_detection/build/face_detection",
+          "args": ["/Users/renatorocha/Projects/opencv/studies/face_detection/people.jpeg", "/Users/renatorocha/Projects/opencv/studies/face_detection/haarcascade_frontalface_alt.xml"],
+          "stopAtEntry": true,
+          "cwd": "${workspaceFolder}",
+          "environment": [],
+          "externalConsole": false,
+          "MIMode": "lldb"
+      }
+  ]
+}
