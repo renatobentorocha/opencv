@@ -16,7 +16,16 @@ using namespace std;
 // 0(minSat)
 // 189(maxSat)
 
+vector<cv::Point> dots;
 cv::Mat frame;
+
+cv::Scalar ScalarHSV2BGR(uchar H, uchar S, uchar V)
+{
+    cv::Mat rgb;
+    cv::Mat hsv(1, 1, CV_8UC3, cv::Scalar(H, S, V));
+    cv::cvtColor(hsv, rgb, cv::COLOR_BGR2HSV);
+    return cv::Scalar(rgb.data[0], rgb.data[1], rgb.data[2]);
+}
 
 void getContours(cv::Mat img)
 {
@@ -39,8 +48,10 @@ void getContours(cv::Mat img)
             float peri = arcLength(contours[i], true);
             approxPolyDP(contours[i], conPoly[i], 0.02 * peri, true);
             boundRect[i] = boundingRect(conPoly[i]);
-            p.x = boundRect[i].x + boundRect[i].width / 2;
+            p.x = boundRect[i].x;
             p.y = boundRect[i].y;
+
+            dots.push_back(cv::Point(p.x, p.y));
 
             drawContours(frame, contours, i, cv::Scalar(255, 0, 255), 2);
             rectangle(frame, boundRect[i].tl(), boundRect[i].br(), cv::Scalar(0, 255, 0), 5);
@@ -59,6 +70,13 @@ void findColor()
     cv::Mat mask;
     cv::inRange(imgHSV, lower, upper, mask);
     getContours(mask);
+
+    cv::polylines(frame, dots, false, cv::Scalar(255, 0, 0), 5, cv::FILLED);
+
+    // for (cv::Point p : dots)
+    // {
+    //     cv::circle(frame, p, 5, cv::Scalar(255, 0, 0), cv::FILLED);
+    // }
 }
 
 int main(int argc, char **argv)
